@@ -13,10 +13,11 @@ int ldrValue;
 int micValue;
 int potValue;
 int buttonState;
-int ldrThreshold = 700;        // Umbral para determinar si está oscuro
-int micThreshold = 600;        // Umbral para detectar ruido fuerte
+int ldrThreshold = 800;        // Umbral para determinar si está oscuro
+int micThreshold = 700;        // Umbral para detectar ruido fuerte
 
 void setup() {
+  Serial.begin(9600);
   // Configuración de pines de salida
   pinMode(led1, OUTPUT);
   pinMode(led2, OUTPUT);
@@ -33,16 +34,20 @@ void setup() {
 void loop() {
   // Leer valores de sensores
   ldrValue = analogRead(ldrPin);
-  Serial.println(ldrValue);
+  //Serial.println(ldrValue);
   micValue = analogRead(micPin);
+  Serial.println(micValue);
   potValue = analogRead(potPin);
   buttonState = digitalRead(buttonPin);
+  delay(1);
+  /*
   if(buttonState){
     Serial.println("Boton");
   }
   else{
     Serial.println("NoBoton");
-}
+  }
+  */
   
   // Condición 1: Encender LEDs si está oscuro
   if (ldrValue > ldrThreshold) {
@@ -103,6 +108,7 @@ void creativeSequence() {
   int delayTime;
 
   // Determinar la frecuencia según el valor del potenciómetro
+  /*
   if (potValue < 341) {
     delayTime = 100; // Frecuencia rápida
   } else if (potValue < 682) {
@@ -110,6 +116,8 @@ void creativeSequence() {
   } else {
     delayTime = 500; // Frecuencia lenta
   }
+  */
+  delayTime = potValue;
 
   // Ejemplo de secuencia 
   digitalWrite(led1, HIGH);
