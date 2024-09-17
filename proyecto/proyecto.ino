@@ -3,9 +3,9 @@ const int led1 = 10;
 const int led2 = 11;
 const int led3 = 13;
 const int led4 = 9;
-const int ldrPin = A0;         // Pin del LDR
+const int micPin = A0;         // Pin del micrófono
+const int ldrPin = A2;         // Pin del LDR
 const int potPin = A1;         // Pin del potenciómetro
-const int micPin = A2;         // Pin del micrófono
 const int buttonPin = 2;       // Pin del pulsador
 
 // Umbrales y variables
@@ -34,36 +34,35 @@ void setup() {
 void loop() {
   // Leer valores de sensores
   ldrValue = analogRead(ldrPin);
-  //Serial.println(ldrValue);
+  Serial.print("foto: ");
+  Serial.println(ldrValue);
   micValue = analogRead(micPin);
+  Serial.print("micro: ");
   Serial.println(micValue);
   potValue = analogRead(potPin);
   buttonState = digitalRead(buttonPin);
-  delay(1);
-  /*
   if(buttonState){
     Serial.println("Boton");
   }
   else{
     Serial.println("NoBoton");
   }
-  */
   
   // Condición 1: Encender LEDs si está oscuro
-  if (ldrValue > ldrThreshold) {
-    turnOnLEDs();
-    
-    // Condición 3: Secuencia creativa si el pulsador está presionado
-    if (buttonState == HIGH) {
-      creativeSequence();
-    }
-  } 
+  if (ldrValue < ldrThreshold) {
+    turnOnLEDs(); 
+  }
+  // Condición 3: Secuencia creativa si el pulsador está presionado
+  else if (buttonState == HIGH) {
+    creativeSequence();
+  }
+  else if (micValue > micThreshold) {
+    gradualBlink();
+  }
+
   // Condición 2: Detectar ruido si hay luz y LEDs están apagados
   else {
     turnOffLEDs();
-    if (micValue > micThreshold) {
-      gradualBlink();
-    }
   }
 }
 
