@@ -1,19 +1,19 @@
 // Definición de pines
-const int led1 = 2;
-const int led2 = 3;
-const int led3 = 4;
-const int led4 = 5;
+const int led1 = 10;
+const int led2 = 11;
+const int led3 = 13;
+const int led4 = 9;
 const int ldrPin = A0;         // Pin del LDR
-const int micPin = A1;         // Pin del micrófono
-const int potPin = A2;         // Pin del potenciómetro
-const int buttonPin = 6;       // Pin del pulsador
+const int potPin = A1;         // Pin del potenciómetro
+const int micPin = A2;         // Pin del micrófono
+const int buttonPin = 2;       // Pin del pulsador
 
 // Umbrales y variables
 int ldrValue;
 int micValue;
 int potValue;
 int buttonState;
-int ldrThreshold = 500;        // Umbral para determinar si está oscuro
+int ldrThreshold = 700;        // Umbral para determinar si está oscuro
 int micThreshold = 600;        // Umbral para detectar ruido fuerte
 
 void setup() {
@@ -33,12 +33,19 @@ void setup() {
 void loop() {
   // Leer valores de sensores
   ldrValue = analogRead(ldrPin);
+  Serial.println(ldrValue);
   micValue = analogRead(micPin);
   potValue = analogRead(potPin);
   buttonState = digitalRead(buttonPin);
+  if(buttonState){
+    Serial.println("Boton");
+  }
+  else{
+    Serial.println("NoBoton");
+}
   
   // Condición 1: Encender LEDs si está oscuro
-  if (ldrValue < ldrThreshold) {
+  if (ldrValue > ldrThreshold) {
     turnOnLEDs();
     
     // Condición 3: Secuencia creativa si el pulsador está presionado
