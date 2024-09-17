@@ -8,13 +8,17 @@ const int ldrPin = A2;         // Pin del LDR
 const int potPin = A1;         // Pin del potenciómetro
 const int buttonPin = 2;       // Pin del pulsador
 
+const int Alto = LOW;
+const int Bajo = HIGH;
+
+
 // Umbrales y variables
 int ldrValue;
 int micValue;
 int potValue;
 int buttonState;
-int ldrThreshold = 800;        // Umbral para determinar si está oscuro
-int micThreshold = 700;        // Umbral para detectar ruido fuerte
+int ldrThreshold = 800;// [800] Umbral para determinar si está oscuro
+int micThreshold = 700;//[700] Umbral para detectar ruido fuerte
 
 void setup() {
   Serial.begin(9600);
@@ -34,32 +38,29 @@ void setup() {
 void loop() {
   // Leer valores de sensores
   ldrValue = analogRead(ldrPin);
-  Serial.print("LDR: ");
-  Serial.println(ldrValue);
   micValue = analogRead(micPin);
-  Serial.print("Mic: ");
-  Serial.println(micValue);
   potValue = analogRead(potPin);
   buttonState = digitalRead(buttonPin);
 
   // Verificar si está oscuro
-  bool isDark = ldrValue < ldrThreshold;
-
+  bool isDark = ldrValue > ldrThreshold;
   if (isDark) {
+    Serial.println("Oscuro");
     // Encender LEDs si está oscuro
     turnOnLEDs();
-
-    // Si el micrófono detecta ruido, parpadear LEDs gradualmente
-    bool noise = micValue > micThreshold;
-    if (noise) {
-      gradualBlink();
-    }
-
     // Ejecutar secuencia creativa si el pulsador está presionado
     if (buttonState == HIGH) {
+      Serial.println("Boton");
       creativeSequence();
     }
   } else {
+    // Si el micrófono detecta ruido, parpadear LEDs gradualmente
+    bool noise = micValue > micThreshold;
+    if (noise) {
+      Serial.println("Ruido");
+      gradualBlink();
+    }
+
     // Si hay luz, apagar LEDs
     turnOffLEDs();
   }
@@ -67,23 +68,23 @@ void loop() {
 
 // Función para encender los LEDs
 void turnOnLEDs() {
-  digitalWrite(led1, HIGH);
-  digitalWrite(led2, HIGH);
-  digitalWrite(led3, HIGH);
-  digitalWrite(led4, HIGH);
+  digitalWrite(led1, Alto);
+  digitalWrite(led2, Alto);
+  digitalWrite(led3, Alto);
+  digitalWrite(led4, Alto);
 }
 
 // Función para apagar los LEDs
 void turnOffLEDs() {
-  digitalWrite(led1, LOW);
-  digitalWrite(led2, LOW);
-  digitalWrite(led3, LOW);
-  digitalWrite(led4, LOW);
+  digitalWrite(led1, Bajo);
+  digitalWrite(led2, Bajo);
+  digitalWrite(led3, Bajo);
+  digitalWrite(led4, Bajo);
 }
 
 // Función para parpadear los LEDs gradualmente 4 veces
 void gradualBlink() {
-  int del = map(potValue, 0, 1023, 10, 1000); // Mapea el valor del potenciómetro a un rango de delay
+  int del = 500; // Mapea el valor del potenciómetro a un rango de delay
   for (int i = 0; i < 4; i++) {
     for (int brightness = 0; brightness <= 255; brightness += 5) {
       analogWrite(led1, brightness);
@@ -104,8 +105,8 @@ void gradualBlink() {
 
 // Función para generar la secuencia creativa de LEDs según el valor del potenciómetro
 void creativeSequence() {
-  int delayTime;
-
+  int delayTime = potValue;
+  /*
   // Determinar la frecuencia según el valor del potenciómetro
   if (potValue < 341) {
     delayTime = 100; // Frecuencia rápida
@@ -114,6 +115,7 @@ void creativeSequence() {
   } else {
     delayTime = 500; // Frecuencia lenta
   }
+  */
 
   // Ejemplo de secuencia creativa
   digitalWrite(led1, HIGH);
