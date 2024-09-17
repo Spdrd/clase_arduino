@@ -34,34 +34,33 @@ void setup() {
 void loop() {
   // Leer valores de sensores
   ldrValue = analogRead(ldrPin);
-  Serial.print("foto: ");
+  Serial.print("LDR: ");
   Serial.println(ldrValue);
   micValue = analogRead(micPin);
-  Serial.print("micro: ");
+  Serial.print("Mic: ");
   Serial.println(micValue);
   potValue = analogRead(potPin);
   buttonState = digitalRead(buttonPin);
-  if(buttonState){
-    Serial.println("Boton");
-  }
-  else{
-    Serial.println("NoBoton");
-  }
-  
-  // Condición 1: Encender LEDs si está oscuro
-  if (ldrValue < ldrThreshold) {
-    turnOnLEDs(); 
-  }
-  // Condición 3: Secuencia creativa si el pulsador está presionado
-  else if (buttonState == HIGH) {
-    creativeSequence();
-  }
-  else if (micValue > micThreshold) {
-    gradualBlink();
-  }
 
-  // Condición 2: Detectar ruido si hay luz y LEDs están apagados
-  else {
+  // Verificar si está oscuro
+  bool isDark = ldrValue < ldrThreshold;
+
+  if (isDark) {
+    // Encender LEDs si está oscuro
+    turnOnLEDs();
+
+    // Si el micrófono detecta ruido, parpadear LEDs gradualmente
+    bool noise = micValue > micThreshold;
+    if (noise) {
+      gradualBlink();
+    }
+
+    // Ejecutar secuencia creativa si el pulsador está presionado
+    if (buttonState == HIGH) {
+      creativeSequence();
+    }
+  } else {
+    // Si hay luz, apagar LEDs
     turnOffLEDs();
   }
 }
@@ -84,20 +83,21 @@ void turnOffLEDs() {
 
 // Función para parpadear los LEDs gradualmente 4 veces
 void gradualBlink() {
+  int del = map(potValue, 0, 1023, 10, 1000); // Mapea el valor del potenciómetro a un rango de delay
   for (int i = 0; i < 4; i++) {
     for (int brightness = 0; brightness <= 255; brightness += 5) {
       analogWrite(led1, brightness);
       analogWrite(led2, brightness);
       analogWrite(led3, brightness);
       analogWrite(led4, brightness);
-      delay(10);
+      delay(del);
     }
     for (int brightness = 255; brightness >= 0; brightness -= 5) {
       analogWrite(led1, brightness);
       analogWrite(led2, brightness);
       analogWrite(led3, brightness);
       analogWrite(led4, brightness);
-      delay(10);
+      delay(del);
     }
   }
 }
@@ -107,7 +107,6 @@ void creativeSequence() {
   int delayTime;
 
   // Determinar la frecuencia según el valor del potenciómetro
-  /*
   if (potValue < 341) {
     delayTime = 100; // Frecuencia rápida
   } else if (potValue < 682) {
@@ -115,10 +114,8 @@ void creativeSequence() {
   } else {
     delayTime = 500; // Frecuencia lenta
   }
-  */
-  delayTime = potValue;
 
-  // Ejemplo de secuencia 
+  // Ejemplo de secuencia creativa
   digitalWrite(led1, HIGH);
   delay(delayTime);
   digitalWrite(led2, HIGH);
@@ -127,7 +124,6 @@ void creativeSequence() {
   delay(delayTime);
   digitalWrite(led4, HIGH);
   delay(delayTime);
-  
   digitalWrite(led1, LOW);
   delay(delayTime);
   digitalWrite(led2, LOW);
@@ -137,3 +133,4 @@ void creativeSequence() {
   digitalWrite(led4, LOW);
   delay(delayTime);
 }
+
