@@ -1,125 +1,217 @@
-// Definición de pines
-const int led1 = 2;
-const int led2 = 3;
-const int led3 = 4;
-const int led4 = 5;
-const int ldrPin = A0;         // Pin del LDR
-const int micPin = A1;         // Pin del micrófono
-const int potPin = A2;         // Pin del potenciómetro
-const int buttonPin = 6;       // Pin del pulsador
+/*  RickRollCode
 
-// Umbrales y variables
-int ldrValue;
-int micValue;
-int potValue;
-int buttonState;
-int ldrThreshold = 500;        // Umbral para determinar si está oscuro
-int micThreshold = 600;        // Umbral para detectar ruido fuerte
+    AUTHOR: Rowan Packard
+    rowanpackard@gmail.com
 
-void setup() {
-  // Configuración de pines de salida
-  pinMode(led1, OUTPUT);
-  pinMode(led2, OUTPUT);
-  pinMode(led3, OUTPUT);
-  pinMode(led4, OUTPUT);
+    DISCLAIMER: The song "Never Gonna Give You Up" by Rick Astley
+    is not  the creative property of the author. This code simply
+    plays a Piezo buzzer  rendition of the song.
+*/
 
-  // Configuración de pines de entrada
-  pinMode(ldrPin, INPUT);
-  pinMode(micPin, INPUT);
-  pinMode(potPin, INPUT);
-  pinMode(buttonPin, INPUT);
+#define  a3f    208     // 208 Hz
+#define  b3f    233     // 233 Hz
+#define  b3     247     // 247 Hz
+#define  c4     261     // 261 Hz MIDDLE C
+#define  c4s    277     // 277 Hz
+#define  e4f    311     // 311 Hz    
+#define  f4     349     // 349 Hz 
+#define  a4f    415     // 415 Hz  
+#define  b4f    466     // 466 Hz 
+#define  b4     493     //  493 Hz 
+#define  c5     523     // 523 Hz 
+#define  c5s    554     // 554  Hz
+#define  e5f    622     // 622 Hz  
+#define  f5     698     // 698 Hz 
+#define  f5s    740     // 740 Hz
+#define  a5f    831     // 831 Hz 
+
+#define  rest    -1
+
+int piezo = A5; // Connect your piezo buzzer to this pin or change  it to match your circuit!
+int led = LED_BUILTIN; 
+
+volatile int beatlength  = 100; // determines tempo
+float beatseparationconstant = 0.3;
+
+int threshold;
+
+int  a; // part index
+int b; // song index
+int c; // lyric index
+
+boolean  flag;
+
+// Parts 1 and 2 (Intro)
+
+int song1_intro_melody[] =
+{c5s,  e5f, e5f, f5, a5f, f5s, f5, e5f, c5s, e5f, rest, a4f, a4f};
+
+int song1_intro_rhythmn[]  =
+{6, 10, 6, 6, 1, 1, 1, 1, 6, 10, 4, 2, 10};
+
+// Parts 3 or 5 (Verse 1)
+
+int  song1_verse1_melody[] =
+{ rest, c4s, c4s, c4s, c4s, e4f, rest, c4, b3f, a3f,
+  rest, b3f, b3f, c4, c4s, a3f, a4f, a4f, e4f,
+  rest, b3f, b3f, c4, c4s, b3f,  c4s, e4f, rest, c4, b3f, b3f, a3f,
+  rest, b3f, b3f, c4, c4s, a3f, a3f, e4f,  e4f, e4f, f4, e4f,
+  c4s, e4f, f4, c4s, e4f, e4f, e4f, f4, e4f, a3f,
+  rest,  b3f, c4, c4s, a3f, rest, e4f, f4, e4f
+};
+
+int song1_verse1_rhythmn[] =
+{  2, 1, 1, 1, 1, 2, 1, 1, 1, 5,
+  1, 1, 1, 1, 3, 1, 2, 1, 5,
+  1, 1, 1, 1, 1,  1, 1, 2, 1, 1, 1, 1, 3,
+  1, 1, 1, 1, 2, 1, 1, 1, 1, 1, 1, 4,
+  5, 1, 1, 1,  1, 1, 1, 1, 2, 2,
+  2, 1, 1, 1, 3, 1, 1, 1, 3
+};
+
+const char* lyrics_verse1[]  =
+{ "We're ", "no ", "strangers ", "", "to ", "love ", "", "\
+\
+",
+  "You ", "know ", "the ", "rules ", "and ", "so ", "do ", "I\
+\
+",
+  "A ", "full ", "commitment's ", "", "", "what ", "I'm ", "thinking  ", "", "of", "\
+\
+",
+  "You ", "wouldn't ", "", "get ", "this  ", "from ", "any ", "", "other ", "", "guy\
+\
+",
+  "I ", "just  ", "wanna ", "", "tell ", "you ", "how ", "I'm ", "feeling", "\
+\
+",
+  "Gotta ", "", "make ", "you ", "understand", "", "\
+\
+"
+};
+
+//  Parts 4 or 6 (Chorus)
+
+int song1_chorus_melody[] =
+{ b4f, b4f, a4f, a4f,
+  f5, f5, e5f, b4f, b4f, a4f, a4f, e5f, e5f, c5s, c5, b4f,
+  c5s, c5s, c5s, c5s,
+  c5s, e5f, c5, b4f, a4f, a4f, a4f, e5f, c5s,
+  b4f, b4f, a4f, a4f,
+  f5,  f5, e5f, b4f, b4f, a4f, a4f, a5f, c5, c5s, c5, b4f,
+  c5s, c5s, c5s, c5s,
+  c5s, e5f, c5, b4f, a4f, rest, a4f, e5f, c5s, rest
+};
+
+int song1_chorus_rhythmn[]  =
+{ 1, 1, 1, 1,
+  3, 3, 6, 1, 1, 1, 1, 3, 3, 3, 1, 2,
+  1, 1, 1, 1,
+  3, 3, 3, 1, 2, 2, 2, 4, 8,
+  1, 1, 1, 1,
+  3, 3, 6, 1, 1, 1, 1, 3, 3, 3,  1, 2,
+  1, 1, 1, 1,
+  3, 3, 3, 1, 2, 2, 2, 4, 8, 4
+};
+
+const char*  lyrics_chorus[] =
+{ "Never ", "", "gonna ", "", "give ", "you ",  "up\
+\
+",
+  "Never ", "", "gonna ", "", "let ", "you ", "down",  "", "\
+\
+",
+  "Never ", "", "gonna ", "", "run ", "around ",  "", "", "", "and ", "desert ", "", "you\
+\
+",
+  "Never ", "",  "gonna ", "", "make ", "you ", "cry\
+\
+",
+  "Never ", "", "gonna  ", "", "say ", "goodbye ", "", "", "\
+\
+",
+  "Never ", "",  "gonna ", "", "tell ", "a ", "lie ", "", "", "and ", "hurt ",  "you\
+\
+"
+};
+
+void setup()
+{
+  pinMode(piezo, OUTPUT);
+  pinMode(led,  OUTPUT);
+
+  digitalWrite(led, LOW);
+  Serial.begin(9600);
+  flag = true;
+  a = 4;
+  b = 0;
+  c = 0;
 }
 
-void loop() {
-  // Leer valores de sensores
-  ldrValue = analogRead(ldrPin);
-  micValue = analogRead(micPin);
-  potValue = analogRead(potPin);
-  buttonState = digitalRead(buttonPin);
-  
-  // Condición 1: Encender LEDs si está oscuro
-  if (ldrValue < ldrThreshold) {
-    turnOnLEDs();
-    
-    // Condición 3: Secuencia creativa si el pulsador está presionado
-    if (buttonState == HIGH) {
-      creativeSequence();
-    }
-  } 
-  // Condición 2: Detectar ruido si hay luz y LEDs están apagados
-  else {
-    turnOffLEDs();
-    if (micValue > micThreshold) {
-      gradualBlink();
-    }
+void loop()
+{
+
+
+  // play  next step in song
+  if (flag == true) {
+    play();
   }
 }
 
-// Función para encender los LEDs
-void turnOnLEDs() {
-  digitalWrite(led1, HIGH);
-  digitalWrite(led2, HIGH);
-  digitalWrite(led3, HIGH);
-  digitalWrite(led4, HIGH);
-}
-
-// Función para apagar los LEDs
-void turnOffLEDs() {
-  digitalWrite(led1, LOW);
-  digitalWrite(led2, LOW);
-  digitalWrite(led3, LOW);
-  digitalWrite(led4, LOW);
-}
-
-// Función para parpadear los LEDs gradualmente 4 veces
-void gradualBlink() {
-  for (int i = 0; i < 4; i++) {
-    for (int brightness = 0; brightness <= 255; brightness += 5) {
-      analogWrite(led1, brightness);
-      analogWrite(led2, brightness);
-      analogWrite(led3, brightness);
-      analogWrite(led4, brightness);
-      delay(10);
+void  play() {
+  int notelength;
+  if (a == 1 || a == 2) {
+    // intro
+    notelength  = beatlength * song1_intro_rhythmn[b];
+    if (song1_intro_melody[b] > 0) {
+      digitalWrite(led, HIGH);
+      tone(piezo, song1_intro_melody[b], notelength);
     }
-    for (int brightness = 255; brightness >= 0; brightness -= 5) {
-      analogWrite(led1, brightness);
-      analogWrite(led2, brightness);
-      analogWrite(led3, brightness);
-      analogWrite(led4, brightness);
-      delay(10);
+    b++;
+    if (b >= sizeof(song1_intro_melody) / sizeof(int)) {
+      a++;
+      b = 0;
+      c = 0;
     }
   }
-}
-
-// Función para generar la secuencia creativa de LEDs según el valor del potenciómetro
-void creativeSequence() {
-  int delayTime;
-
-  // Determinar la frecuencia según el valor del potenciómetro
-  if (potValue < 341) {
-    delayTime = 100; // Frecuencia rápida
-  } else if (potValue < 682) {
-    delayTime = 300; // Frecuencia media
-  } else {
-    delayTime = 500; // Frecuencia lenta
+  else if (a == 3  || a == 5) {
+    // verse
+    notelength = beatlength * 2 * song1_verse1_rhythmn[b];
+    if (song1_verse1_melody[b] > 0) {
+      digitalWrite(led, HIGH);
+      Serial.print(lyrics_verse1[c]);
+      tone(piezo, song1_verse1_melody[b], notelength);
+      c++;
+    }
+    b++;
+    if (b >= sizeof(song1_verse1_melody) / sizeof(int)) {
+      a++;
+      b = 0;
+      c = 0;
+    }
   }
-
-  // Ejemplo de secuencia 
-  digitalWrite(led1, HIGH);
-  delay(delayTime);
-  digitalWrite(led2, HIGH);
-  delay(delayTime);
-  digitalWrite(led3, HIGH);
-  delay(delayTime);
-  digitalWrite(led4, HIGH);
-  delay(delayTime);
-  
-  digitalWrite(led1, LOW);
-  delay(delayTime);
-  digitalWrite(led2, LOW);
-  delay(delayTime);
-  digitalWrite(led3, LOW);
-  delay(delayTime);
-  digitalWrite(led4, LOW);
-  delay(delayTime);
+  else if (a == 4 || a == 6) {
+    // chorus
+    notelength = beatlength * song1_chorus_rhythmn[b];
+    if  (song1_chorus_melody[b] > 0) {
+      digitalWrite(led, HIGH);
+      Serial.print(lyrics_chorus[c]);
+      tone(piezo, song1_chorus_melody[b], notelength);
+      c++;
+    }
+    b++;
+    if (b >= sizeof(song1_chorus_melody) / sizeof(int)) {
+      Serial.println("");
+      a++;
+      b = 0;
+      c = 0;
+    }
+  }
+  delay(notelength);
+  noTone(piezo);
+  digitalWrite(led, LOW);
+  delay(notelength * beatseparationconstant);
+  if (a == 7) { // loop back around to beginning of song
+    a = 1;
+  }
 }
