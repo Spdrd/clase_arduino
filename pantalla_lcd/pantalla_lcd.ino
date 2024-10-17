@@ -12,7 +12,7 @@ void setup(){
 }
 
 void loop(){
-  //lcd.scrollDisplayRight();
+  
   if(Serial.available()){
     delay(del);
     lcd.clear();

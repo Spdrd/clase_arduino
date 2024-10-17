@@ -20,7 +20,7 @@ void loop() {
     servo.write(angulo);
     Serial.print("Angulo: ");
     Serial.println(angulo);
-    
+    delay(20);
   }
   /*
   for(; angulo > 0 ; angulo--){
